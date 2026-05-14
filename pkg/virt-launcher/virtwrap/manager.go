@@ -105,6 +105,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/disksource"
 	"kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/efi"
 	domainerrors "kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/errors"
+	"kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/livetuning"
 	"kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/stats"
 	"kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/util"
 	virtcache "kubevirt.io/kubevirt/tools/cache"
@@ -1268,6 +1269,13 @@ func (l *LibvirtDomainManager) SyncVMI(vmi *v1.VirtualMachineInstance, allowEmul
 		return nil, err
 	}
 
+	liveTuning, err := livetuning.FromVMI(vmi)
+	if err != nil {
+		logger.Reason(err).Error("failed to parse live tuning annotation")
+		return nil, err
+	}
+	livetuning.ApplyToDomain(domain, liveTuning)
+
 	// Set defaults which are not coming from the cluster
 	api.NewDefaulter(c.Architecture.GetArchitecture()).SetObjectDefaults_Domain(domain)
 
@@ -1317,10 +1325,46 @@ func (l *LibvirtDomainManager) SyncVMI(vmi *v1.VirtualMachineInstance, allowEmul
 		return nil, err
 	}
 
+	if err := l.syncLiveTuningCPU(dom, vmi, liveTuning); err != nil {
+		return nil, err
+	}
+
 	l.syncGracePeriod(vmi)
 
 	// TODO: check if VirtualMachineInstance Spec and Domain Spec are equal or if we have to sync
 	return oldSpec, nil
+}
+
+func (l *LibvirtDomainManager) syncLiveTuningCPU(dom cli.VirDomain, vmi *v1.VirtualMachineInstance, config *livetuning.Config) error {
+	if config == nil || config.CPU == nil {
+		return nil
+	}
+
+	domState, _, err := dom.GetState()
+	if err != nil {
+		log.Log.Object(vmi).Reason(err).Error(failedGetDomainState)
+		return err
+	}
+	if cli.IsDown(domState) {
+		return nil
+	}
+
+	params := &libvirt.DomainSchedulerParameters{}
+	if config.CPU.VCPUPeriod != nil {
+		params.VcpuPeriodSet = true
+		params.VcpuPeriod = *config.CPU.VCPUPeriod
+	}
+	if config.CPU.VCPUQuota != nil {
+		params.VcpuQuotaSet = true
+		params.VcpuQuota = *config.CPU.VCPUQuota
+	}
+
+	if err := dom.SetSchedulerParametersFlags(params, affectDomainLiveAndConfigLibvirtFlags); err != nil {
+		log.Log.Object(vmi).Reason(err).Error("failed to apply live CPU tuning")
+		return err
+	}
+
+	return nil
 }
 
 func (l *LibvirtDomainManager) syncDisks(

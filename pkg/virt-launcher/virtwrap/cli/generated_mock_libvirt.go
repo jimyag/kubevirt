@@ -959,6 +959,20 @@ func (mr *MockVirDomainMockRecorder) SetUserPassword(user, password, flags any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserPassword", reflect.TypeOf((*MockVirDomain)(nil).SetUserPassword), user, password, flags)
 }
 
+// SetSchedulerParametersFlags mocks base method.
+func (m *MockVirDomain) SetSchedulerParametersFlags(params *libvirt.DomainSchedulerParameters, flags libvirt.DomainModificationImpact) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetSchedulerParametersFlags", params, flags)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetSchedulerParametersFlags indicates an expected call of SetSchedulerParametersFlags.
+func (mr *MockVirDomainMockRecorder) SetSchedulerParametersFlags(params, flags any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSchedulerParametersFlags", reflect.TypeOf((*MockVirDomain)(nil).SetSchedulerParametersFlags), params, flags)
+}
+
 // SetVcpusFlags mocks base method.
 func (m *MockVirDomain) SetVcpusFlags(vcpu uint, flags libvirt.DomainVcpuFlags) error {
 	m.ctrl.T.Helper()

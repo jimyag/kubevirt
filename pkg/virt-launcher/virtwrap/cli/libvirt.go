@@ -658,6 +658,7 @@ type VirDomain interface {
 	SetTime(secs int64, nsecs uint, flags libvirt.DomainSetTimeFlags) error
 	SetUserPassword(user string, password string, flags libvirt.DomainSetUserPasswordFlags) error
 	AuthorizedSSHKeysSet(user string, keys []string, flags libvirt.DomainAuthorizedSSHKeysFlags) error
+	SetSchedulerParametersFlags(params *libvirt.DomainSchedulerParameters, flags libvirt.DomainModificationImpact) error
 	AbortJob() error
 	Free() error
 	CoreDumpWithFormat(to string, format libvirt.DomainCoreDumpFormat, flags libvirt.DomainCoreDumpFlags) error
