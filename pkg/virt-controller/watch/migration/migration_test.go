@@ -1524,6 +1524,49 @@ var _ = Describe("Migration watcher", func() {
 			}, ConsistOf("failed-mig-1", "failed-mig-2", "failed-mig-3", "failed-mig-4", "failed-mig-5")))
 		})
 
+		It("should wait for finalized migration state to reach the cache before zero-limit cleanup", func() {
+			setConfig(&v1.KubeVirtConfiguration{
+				MigrationConfiguration: &v1.MigrationConfiguration{
+					HistoryLimits: &v1.MigrationHistoryLimits{
+						Successful: 0,
+						Failed:     5,
+					},
+				},
+			})
+
+			vmi := newVirtualMachine("testvmi", v1.Running)
+			migration := newMigration("successful-mig", vmi.Name, v1.MigrationSucceeded)
+			sourcePod := newSourcePodForVirtualMachine(vmi)
+			vmi.Status.MigrationState = &v1.VirtualMachineInstanceMigrationState{
+				MigrationUID: migration.UID,
+				Completed:    true,
+				SourcePod:    sourcePod.Name,
+			}
+			addVirtualMachineInstance(vmi)
+			addPod(sourcePod)
+			Expect(controller.migrationIndexer.Add(migration)).To(Succeed())
+			_, err := virtClientset.KubevirtV1().VirtualMachineInstanceMigrations(migration.Namespace).Create(context.Background(), migration, metav1.CreateOptions{})
+			Expect(err).ToNot(HaveOccurred())
+
+			By("Updating the finalized migration while leaving the informer cache stale")
+			Expect(controller.updateStatus(migration, vmi, nil, nil)).To(Succeed())
+
+			By("Waiting to clean up until the finalized migration state reaches the cache")
+			Expect(controller.garbageCollectFinalizedMigrations(vmi)).To(Succeed())
+			updatedMigration, err := virtClientset.KubevirtV1().VirtualMachineInstanceMigrations(migration.Namespace).Get(context.Background(), migration.Name, metav1.GetOptions{})
+			Expect(err).ToNot(HaveOccurred())
+			_, err = kubeClient.CoreV1().Pods(sourcePod.Namespace).Get(context.Background(), sourcePod.Name, metav1.GetOptions{})
+			Expect(err).ToNot(HaveOccurred())
+
+			By("Cleaning up the migration and source pod after the cache observes the finalized state")
+			Expect(controller.migrationIndexer.Update(updatedMigration)).To(Succeed())
+			Expect(controller.garbageCollectFinalizedMigrations(vmi)).To(Succeed())
+			_, err = virtClientset.KubevirtV1().VirtualMachineInstanceMigrations(migration.Namespace).Get(context.Background(), migration.Name, metav1.GetOptions{})
+			Expect(err).To(MatchError(k8serrors.IsNotFound, "k8serrors.IsNotFound"))
+			_, err = kubeClient.CoreV1().Pods(sourcePod.Namespace).Get(context.Background(), sourcePod.Name, metav1.GetOptions{})
+			Expect(err).To(MatchError(k8serrors.IsNotFound, "k8serrors.IsNotFound"))
+		})
+
 		It("should garbage collect oldest finalized migrations when exceeding buffer", func() {
 			vmi := newVirtualMachine("testvmi", v1.Running)
 			addVirtualMachineInstance(vmi)

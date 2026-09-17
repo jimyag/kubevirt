@@ -2273,6 +2273,14 @@ func (c *Controller) garbageCollectFinalizedMigrations(vmi *virtv1.VirtualMachin
 	sort.Sort(vmimCollection(migrations))
 	for _, migration := range migrations {
 		if migration.IsFinal() && migration.DeletionTimestamp == nil {
+			// updateStatus writes the finalized VMI migration state before the informer
+			// cache observes it. Wait for the cache so pod cleanup is not skipped before
+			// the migration object is deleted.
+			if vmi.IsMigrationSynchronized(migration) &&
+				migration.UID == vmi.Status.MigrationState.MigrationUID &&
+				!equality.Semantic.DeepEqual(migration.Status.MigrationState, vmi.Status.MigrationState) {
+				continue
+			}
 			finalizedMigrations = append(finalizedMigrations, migration)
 		}
 	}
