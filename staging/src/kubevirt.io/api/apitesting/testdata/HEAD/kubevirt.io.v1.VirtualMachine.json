@@ -373,14 +373,14 @@
                 "state": "stateValue",
                 "bandwidth": {
                   "inbound": {
-                    "average": "0",
-                    "peak": "0",
-                    "burst": "0"
+                    "average": 4294967289,
+                    "peak": 4294967292,
+                    "burst": 4294967291
                   },
                   "outbound": {
-                    "average": "0",
-                    "peak": "0",
-                    "burst": "0"
+                    "average": 4294967289,
+                    "peak": 4294967292,
+                    "burst": 4294967291
                   }
                 }
               }

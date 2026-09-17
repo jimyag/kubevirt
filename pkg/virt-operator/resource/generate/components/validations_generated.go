@@ -1385,6 +1385,24 @@ var CRDsValidation map[string]string = map[string]string{
                     When set to true, DisableTLS will disable the additional layer of live migration encryption
                     provided by KubeVirt. This is usually a bad idea. Defaults to false
                   type: boolean
+                historyLimits:
+                  description: |-
+                    HistoryLimits controls how many successful and failed migrations are retained per VMI.
+                    When unset, the most recent 5 finalized migrations are retained regardless of outcome.
+                  properties:
+                    failed:
+                      description: Failed is the number of failed migrations to retain.
+                      format: int32
+                      type: integer
+                    successful:
+                      description: Successful is the number of successful migrations
+                        to retain.
+                      format: int32
+                      type: integer
+                  required:
+                  - failed
+                  - successful
+                  type: object
                 matchSELinuxLevelOnMigration:
                   description: |-
                     By default, the SELinux level of target virt-launcher pods is forced to the level of the source virt-launcher.
@@ -15124,6 +15142,24 @@ var CRDsValidation map[string]string = map[string]string{
                     When set to true, DisableTLS will disable the additional layer of live migration encryption
                     provided by KubeVirt. This is usually a bad idea. Defaults to false
                   type: boolean
+                historyLimits:
+                  description: |-
+                    HistoryLimits controls how many successful and failed migrations are retained per VMI.
+                    When unset, the most recent 5 finalized migrations are retained regardless of outcome.
+                  properties:
+                    failed:
+                      description: Failed is the number of failed migrations to retain.
+                      format: int32
+                      type: integer
+                    successful:
+                      description: Successful is the number of successful migrations
+                        to retain.
+                      format: int32
+                      type: integer
+                  required:
+                  - failed
+                  - successful
+                  type: object
                 matchSELinuxLevelOnMigration:
                   description: |-
                     By default, the SELinux level of target virt-launcher pods is forced to the level of the source virt-launcher.
@@ -15725,6 +15761,24 @@ var CRDsValidation map[string]string = map[string]string{
                     When set to true, DisableTLS will disable the additional layer of live migration encryption
                     provided by KubeVirt. This is usually a bad idea. Defaults to false
                   type: boolean
+                historyLimits:
+                  description: |-
+                    HistoryLimits controls how many successful and failed migrations are retained per VMI.
+                    When unset, the most recent 5 finalized migrations are retained regardless of outcome.
+                  properties:
+                    failed:
+                      description: Failed is the number of failed migrations to retain.
+                      format: int32
+                      type: integer
+                    successful:
+                      description: Successful is the number of successful migrations
+                        to retain.
+                      format: int32
+                      type: integer
+                  required:
+                  - failed
+                  - successful
+                  type: object
                 matchSELinuxLevelOnMigration:
                   description: |-
                     By default, the SELinux level of target virt-launcher pods is forced to the level of the source virt-launcher.

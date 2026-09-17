@@ -496,13 +496,13 @@ spec:
           - acpiIndex: -9
             bandwidth:
               inbound:
-                average: "0"
-                burst: "0"
-                peak: "0"
+                average: 4294967289
+                burst: 4294967291
+                peak: 4294967292
               outbound:
-                average: "0"
-                burst: "0"
-                peak: "0"
+                average: 4294967289
+                burst: 4294967291
+                peak: 4294967292
             binding:
               name: nameValue
             bootOrder: 18446744073709551607

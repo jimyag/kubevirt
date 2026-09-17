@@ -313,14 +313,14 @@
             "state": "stateValue",
             "bandwidth": {
               "inbound": {
-                "average": "0",
-                "peak": "0",
-                "burst": "0"
+                "average": 4294967289,
+                "peak": 4294967292,
+                "burst": 4294967291
               },
               "outbound": {
-                "average": "0",
-                "peak": "0",
-                "burst": "0"
+                "average": 4294967289,
+                "peak": 4294967292,
+                "burst": 4294967291
               }
             }
           }
@@ -1006,6 +1006,10 @@
         "nodeDrainTaintKey": "nodeDrainTaintKeyValue",
         "parallelOutboundMigrationsPerNode": 4294967263,
         "parallelMigrationsPerCluster": 4294967268,
+        "historyLimits": {
+          "successful": 4294967286,
+          "failed": 4294967290
+        },
         "allowAutoConverge": true,
         "bandwidthPerMigration": "0",
         "completionTimeoutPerGiB": -23,
